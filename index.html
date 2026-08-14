@@ -3893,24 +3893,84 @@ document.addEventListener("DOMContentLoaded", function(){
 const cats=[['footballQuestions','⚽','كرة القدم'],['generalQuestions','🧠','معلومات عامة'],['seerahQuestions','📖','السيرة النبوية'],['geographyQuestions','🌍','الجغرافيا'],['scienceQuestions','🔬','العلوم'],['historyQuestions','🏛️','التاريخ'],['technologyQuestions','💻','التكنولوجيا'],['moviesQuestions','🎬','الأفلام'],['gamesQuestions','🎮','الألعاب']];
 let selected=[],turn=0,score=[0,0],timer=null,seconds=60,current=null,currentBtn=null,passed=false;
 const $=id=>document.getElementById(id);
-function bank(k){try{
-  let b=[];
-  if(k==='footballQuestions') b=(typeof questionsData!=='undefined')?questionsData:[];
-  else if(k==='generalQuestions') b=(typeof generalQuestions!=='undefined')?generalQuestions:[];
-  else if(k==='seerahQuestions') b=(typeof seerahQuestions!=='undefined')?seerahQuestions:[];
-  else if(k==='geographyQuestions') b=(typeof geographyQuestions!=='undefined')?geographyQuestions:[];
-  else if(k==='scienceQuestions') b=(typeof scienceQuestions!=='undefined')?scienceQuestions:[];
-  else if(k==='historyQuestions') b=(typeof historyQuestions!=='undefined')?historyQuestions:[];
-  else if(k==='technologyQuestions') b=(typeof technologyQuestions!=='undefined')?technologyQuestions:[];
-  else if(k==='moviesQuestions') b=(typeof moviesQuestions!=='undefined')?moviesQuestions:[];
-  else if(k==='gamesQuestions') b=(typeof gamesQuestions!=='undefined')?gamesQuestions:[];
-  if(!Array.isArray(b)&&b&&typeof b==='object') b=Object.values(b).flatMap(v=>Array.isArray(v)?v:[]);
-  return Array.isArray(b)?b.filter(q=>q&&q.q&&Array.isArray(q.options)&&q.options.length>=2):[];
- }catch(e){console.error('Sen Jeem bank error',k,e);return[]}}
+function bank(k){
+  try{
+    let source=null;
+    if(k==='footballQuestions') source=(typeof questionsData!=='undefined')?questionsData:null;
+    else if(k==='generalQuestions') source=(typeof generalQuestions!=='undefined')?generalQuestions:null;
+    else if(k==='seerahQuestions') source=(typeof seerahQuestions!=='undefined')?seerahQuestions:null;
+    else if(k==='geographyQuestions') source=(typeof geographyQuestions!=='undefined')?geographyQuestions:null;
+    else if(k==='scienceQuestions') source=(typeof scienceQuestions!=='undefined')?scienceQuestions:null;
+    else if(k==='historyQuestions') source=(typeof historyQuestions!=='undefined')?historyQuestions:null;
+    else if(k==='technologyQuestions') source=(typeof technologyQuestions!=='undefined')?technologyQuestions:null;
+    else if(k==='moviesQuestions') source=(typeof moviesQuestions!=='undefined')?moviesQuestions:null;
+    else if(k==='gamesQuestions') source=(typeof gamesQuestions!=='undefined')?gamesQuestions:null;
+    if(!source) return {easy:[],medium:[],hard:[]};
+
+    const clean=a=>Array.isArray(a)?a.filter(q=>q&&q.q&&Array.isArray(q.options)&&q.options.length>=2):[];
+
+    // Preserve difficulty: 200 = easy, 400 = medium, 600 = hard.
+    if(Array.isArray(source)){
+      const shuffled=clean(source).slice().sort(()=>Math.random()-.5);
+      const n=Math.max(1,Math.ceil(shuffled.length/3));
+      return {
+        easy: shuffled.slice(0,n),
+        medium: shuffled.slice(n,n*2),
+        hard: shuffled.slice(n*2)
+      };
+    }
+
+    return {
+      easy: clean(source.easy),
+      medium: clean(source.medium),
+      hard: clean(source.hard)
+    };
+  }catch(e){
+    console.error('Sen Jeem bank error',k,e);
+    return {easy:[],medium:[],hard:[]};
+  }
+}
 function open(){ $('sjx').style.display='block';$('sjxSetup').style.display='block';$('sjxGame').style.display='none';$('sjxQuestion').style.display='none';renderPicks(); }
 function renderPicks(){let box=$('sjxPicks');box.innerHTML='';cats.forEach(c=>{let b=document.createElement('button');b.className='sjx-pick '+(selected.includes(c[0])?'on':'');b.textContent=c[1]+' '+c[2];b.onclick=()=>{if(selected.includes(c[0]))selected=selected.filter(x=>x!==c[0]);else if(selected.length<6)selected.push(c[0]);renderPicks()};box.appendChild(b)})}
-function start(){if(selected.length!==6){alert('اختار 6 فئات بالضبط');return}if(selected.some(k=>!bank(k).length)){alert('هناك فئة لا تحتوي على أسئلة قابلة للقراءة في الملف.');return}turn=0;score=[0,0];$('sjxNameA').textContent=$('sjxA').value||'الفريق الأول';$('sjxNameB').textContent=$('sjxB').value||'الفريق الثاني';$('sjxScoreA').textContent=0;$('sjxScoreB').textContent=0;$('sjxSetup').style.display='none';$('sjxGame').style.display='block';build()}
-function build(){let board=$('sjxBoard');board.innerHTML='';selected.forEach((k,ci)=>{let c=cats.find(x=>x[0]===k);let qs=bank(k).slice().sort(()=>Math.random()-.5).slice(0,3);let card=document.createElement('div');card.className='sjx-card';let left=document.createElement('div');left.className='sjx-values';let center=document.createElement('div');center.className='sjx-center';center.innerHTML='<div class="sjx-icon">'+c[1]+'</div><div class="sjx-title">'+c[2]+'</div>';let right=document.createElement('div');right.className='sjx-values';[200,400,600].forEach((v,i)=>{let b1=document.createElement('button');b1.className='sjx-value';b1.textContent=v;b1.onclick=()=>ask(qs[i],v,b1);let b2=document.createElement('button');b2.className='sjx-value';b2.textContent=v;b2.onclick=()=>ask(qs[i],v,b2);left.appendChild(b1);right.appendChild(b2)});card.append(left,center,right);board.appendChild(card)})}
+function start(){
+  if(selected.length!==6){alert('اختار 6 فئات بالضبط');return}
+  const bad=selected.filter(k=>{const b=bank(k);return !b.easy.length||!b.medium.length||!b.hard.length});
+  if(bad.length){alert('كل فئة تحتاج أسئلة في 3 مستويات: سهل / متوسط / صعب.');return}
+  turn=0;score=[0,0];
+  $('sjxNameA').textContent=$('sjxA').value||'الفريق الأول';
+  $('sjxNameB').textContent=$('sjxB').value||'الفريق الثاني';
+  $('sjxScoreA').textContent=0;$('sjxScoreB').textContent=0;
+  $('sjxSetup').style.display='none';$('sjxGame').style.display='block';build();
+}
+function build(){
+  const board=$('sjxBoard'); board.innerHTML='';
+  selected.forEach(k=>{
+    const c=cats.find(x=>x[0]===k), b=bank(k);
+    const pickTwoUnique=(arr)=>{
+      const a=arr.slice().sort(()=>Math.random()-.5);
+      if(a.length < 2) return [a[0], a[0]];
+      return [a[0], a[1]];
+    };
+    // لكل قيمة سؤال مختلف للفريقين:
+    // 200: سؤالان مختلفان، 400: سؤالان مختلفان، 600: سؤالان مختلفان.
+    const e=pickTwoUnique(b.easy), m=pickTwoUnique(b.medium), h=pickTwoUnique(b.hard);
+    const leftQs=[e[0],m[0],h[0]];
+    const rightQs=[e[1],m[1],h[1]];
+    const card=document.createElement('div'); card.className='sjx-card';
+    const left=document.createElement('div'); left.className='sjx-values';
+    const center=document.createElement('div'); center.className='sjx-center';
+    center.innerHTML='<div class="sjx-icon">'+c[1]+'</div><div class="sjx-title">'+c[2]+'</div>';
+    const right=document.createElement('div'); right.className='sjx-values';
+    [200,400,600].forEach((v,i)=>{
+      const b1=document.createElement('button'); b1.className='sjx-value'; b1.textContent=v;
+      b1.onclick=()=>ask(leftQs[i],v,b1);
+      const b2=document.createElement('button'); b2.className='sjx-value'; b2.textContent=v;
+      b2.onclick=()=>ask(rightQs[i],v,b2);
+      left.appendChild(b1); right.appendChild(b2);
+    });
+    card.append(left,center,right); board.appendChild(card);
+  });
+}
 function ask(q,v,btn){if(!q||btn.classList.contains('sjx-used'))return;btn.classList.add('sjx-used');current=q;currentBtn=btn;currentValue=v;window.__sjxVal=v;passed=false;$('sjxGame').style.display='none';$('sjxQuestion').style.display='block';$('sjxQText').textContent=q.q;$('sjxAnswer').style.display='none';$('sjxAnswer').textContent='الإجابة: '+q.options[Number(q.correct)];$('sjxReveal').style.display='inline-block';$('sjxCorrect').style.display='inline-block';$('sjxWrong').style.display='inline-block';$('sjxPass').style.display='inline-block';startTimer(60)}
 function startTimer(n){clearInterval(timer);seconds=n;$('sjxTime').textContent='⏱️ '+seconds+' ثانية';timer=setInterval(()=>{seconds--;$('sjxTime').textContent='⏱️ '+Math.max(0,seconds)+' ثانية';if(seconds<=0){clearInterval(timer);if(n===60){passed=true;$('sjxTime').textContent='⏱️ 10 ثواني';startTimer(10)}else finishQuestion(false)}},1000)}
 function finishQuestion(ok){clearInterval(timer);if(ok)score[turn]+=currentValue;updateScore();$('sjxCorrect').style.display='none';$('sjxWrong').style.display='none';$('sjxPass').style.display='none';$('sjxReveal').style.display='none';$('sjxReturn').style.display='inline-block';}
