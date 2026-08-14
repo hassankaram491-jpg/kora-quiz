@@ -338,7 +338,7 @@ h1,.logo{text-shadow:0 0 8px var(--cyan),0 0 25px var(--purple);animation:np 2.2
 @media(max-width:650px){.ch-options{grid-template-columns:1fr}.ch-score{grid-template-columns:1fr 1fr}.ch-vs{display:none}}
 </style>
 
-</head>
+<style id="senjeem-board-css">#sjOverlay{display:none;position:fixed;inset:0;z-index:100000;background:radial-gradient(circle at top,#10194b,#030512 65%);color:#fff;overflow:auto;font-family:inherit}#sjApp{min-height:100%;padding:18px}.sj-head{max-width:1200px;margin:auto;display:flex;justify-content:space-between;align-items:center}.sj-logo{font-size:clamp(28px,5vw,48px);font-weight:1000;text-shadow:0 0 18px #00eaff,0 0 35px #ff24d8}.sj-close{background:#ffffff10;color:#fff;border:1px solid #ffffff35;border-radius:12px;padding:9px 14px;cursor:pointer}.sj-setup{max-width:850px;margin:25px auto;background:#0b1030dd;border:1px solid #00eaff55;border-radius:24px;padding:24px}.sj-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sj-input{width:100%;box-sizing:border-box;background:#05081b;color:#fff;border:1px solid #ffffff22;border-radius:13px;padding:13px;font:inherit}.sj-catpick{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.sj-pick{padding:13px;border-radius:14px;background:#ffffff08;border:1px solid #ffffff20;color:#fff;cursor:pointer;font-weight:800}.sj-pick.active{border-color:#00eaff;box-shadow:0 0 15px #00eaff35;background:#00eaff12}.sj-start{width:100%;padding:15px;margin-top:18px;border:0;border-radius:15px;background:linear-gradient(90deg,#00eaff,#ff24d8);font-weight:1000;font-size:1.1rem;cursor:pointer}.sj-score{max-width:1200px;margin:10px auto;display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center}.sj-team{padding:12px;border-radius:17px;text-align:center;background:#ffffff08;border:1px solid #ffffff1f}.sj-score-num{font-size:32px;font-weight:1000}.sj-turn{font-weight:900}.sj-board{max-width:1200px;margin:14px auto;display:grid;grid-template-columns:repeat(6,minmax(95px,1fr));gap:8px}.sj-cat{background:linear-gradient(180deg,#171d5a,#0c1030);border:1px solid #00eaff55;border-radius:11px;padding:10px;text-align:center;font-weight:1000;min-height:54px}.sj-cell{min-height:78px;border-radius:12px;border:1px solid #ffffff1c;background:linear-gradient(145deg,#151b51,#090d28);color:#fff;font-size:22px;font-weight:1000;cursor:pointer}.sj-cell:hover{border-color:#00eaff;box-shadow:0 0 18px #00eaff35}.sj-cell.used{opacity:.18;cursor:default}.sj-question{display:none;max-width:800px;margin:20px auto;padding:22px;background:#0b1030f2;border:1px solid #00eaff55;border-radius:22px;text-align:center}.sj-qtext{font-size:clamp(20px,3vw,30px);font-weight:1000;margin-bottom:18px}.sj-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sj-opt{padding:15px;border-radius:14px;border:2px solid #ffffff18;background:#ffffff08;color:#fff;font-weight:800;cursor:pointer}.sj-opt.correct{border-color:#39ff88;background:#39ff8820}.sj-opt.wrong{border-color:#ff4b66;background:#ff4b6620}.sj-timer{font-size:25px;font-weight:1000;margin-bottom:8px}.sj-next{padding:12px 24px;border:0;border-radius:13px;background:linear-gradient(90deg,#00eaff,#ff24d8);font-weight:1000;cursor:pointer}@media(max-width:750px){.sj-board{grid-template-columns:repeat(3,1fr)}.sj-inputs{grid-template-columns:1fr}.sj-options{grid-template-columns:1fr}}</style></head>
 <body>
 <div id="comboBadge">🔥 كومبو x1</div>
 
@@ -3767,16 +3767,32 @@ function shuffleQuizOptions(){
  function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
  function getBank(key){
    let bank = [];
+   // أسماء الأقسام الأساسية في الملف مختلفة عن أسماء أزرار التحدي.
    if(key === "footballQuestions"){
-     bank = window.questionsData || [];
-   } else {
-     bank = window[key] || [];
+     bank = (typeof questionsData !== "undefined") ? questionsData : [];
+   } else if(key === "generalQuestions"){
+     bank = (typeof generalQuestions !== "undefined") ? generalQuestions : [];
+   } else if(key === "seerahQuestions"){
+     bank = (typeof seerahQuestions !== "undefined") ? seerahQuestions : [];
+   } else if(key === "geographyQuestions"){
+     bank = (typeof geographyQuestions !== "undefined") ? geographyQuestions : [];
+   } else if(key === "scienceQuestions"){
+     bank = (typeof scienceQuestions !== "undefined") ? scienceQuestions : [];
+   } else if(key === "historyQuestions"){
+     bank = (typeof historyQuestions !== "undefined") ? historyQuestions : [];
+   } else if(key === "technologyQuestions"){
+     bank = (typeof technologyQuestions !== "undefined") ? technologyQuestions : [];
+   } else if(key === "moviesQuestions"){
+     bank = (typeof moviesQuestions !== "undefined") ? moviesQuestions : [];
+   } else if(key === "gamesQuestions"){
+     bank = (typeof gamesQuestions !== "undefined") ? gamesQuestions : [];
    }
+
    // بعض الأقسام مخزنة كـ {easy, medium, hard}، وبعضها كمصفوفة.
    if(bank && !Array.isArray(bank) && typeof bank === "object"){
      bank = Object.values(bank).flatMap(v => Array.isArray(v) ? v : []);
    }
-   return Array.isArray(bank) ? bank.filter(q => q && q.q && Array.isArray(q.options)) : [];
+   return Array.isArray(bank) ? bank.filter(q => q && q.q && Array.isArray(q.options) && q.options.length >= 2) : [];
  }
  function start(){
    const bank=getBank(selected);
@@ -3854,23 +3870,10 @@ document.addEventListener("DOMContentLoaded", function(){
 </script>
 <script id="challenge-final-bank-fix">
 (function(){
-  function expose(){
-    try{
-      window.questionBanks = window.questionBanks || {};
-      window.questionBanks.footballQuestions = window.questionsData || [];
-      window.questionBanks.generalQuestions = window.generalQuestions || [];
-      window.questionBanks.seerahQuestions = window.seerahQuestions || [];
-      window.questionBanks.geographyQuestions = window.geographyQuestions || [];
-      window.questionBanks.scienceQuestions = window.scienceQuestions || [];
-      window.questionBanks.historyQuestions = window.historyQuestions || [];
-      window.questionBanks.technologyQuestions = window.technologyQuestions || [];
-      window.questionBanks.moviesQuestions = window.moviesQuestions || [];
-      window.questionBanks.gamesQuestions = window.gamesQuestions || [];
-    }catch(e){ console.error(e); }
-  }
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",expose);
-  else expose();
+  // لا نعتمد على window للوصول إلى const/let الخاصة ببنوك الأسئلة.
+  // وضع التحدي نفسه يستخدم getBank() للوصول إليها مباشرة.
+  window.questionBanks = window.questionBanks || {};
 })();
 </script>
-</body>
+<div id="sjOverlay"><div id="sjApp"><div class="sj-head"><div class="sj-logo">⚡ سين جيم</div><button class="sj-close" id="sjClose">✕ إغلاق</button></div><section id="sjSetup" class="sj-setup"><h2>🎮 تحدي سين جيم — فريق ضد فريق</h2><div class="sj-inputs"><input id="sjTeamA" class="sj-input" value="الفريق الأول"><input id="sjTeamB" class="sj-input" value="الفريق الثاني"></div><h3>اختاروا 6 فئات</h3><div id="sjCatPick" class="sj-catpick"></div><button id="sjStart" class="sj-start">🚀 ابدأ اللعبة</button></section><section id="sjGame" style="display:none"><div class="sj-score"><div class="sj-team"><div id="sjNameA">الفريق الأول</div><div id="sjScoreA" class="sj-score-num">0</div></div><div id="sjTurn" class="sj-turn">دور الفريق الأول</div><div class="sj-team"><div id="sjNameB">الفريق الثاني</div><div id="sjScoreB" class="sj-score-num">0</div></div></div><div id="sjBoard" class="sj-board"></div><div id="sjQuestion" class="sj-question"><div id="sjTimer" class="sj-timer">⏱️ 60</div><div id="sjQText" class="sj-qtext"></div><div id="sjOptions" class="sj-options"></div><br><button id="sjNext" class="sj-next" style="display:none">➡️ رجوع للوحة</button></div></section></div></div><script id="senjeem-board-js">(function(){const C=[["footballQuestions","⚽ كرة القدم"],["generalQuestions","🧠 معلومات عامة"],["seerahQuestions","📖 السيرة النبوية"],["geographyQuestions","🌍 الجغرافيا"],["scienceQuestions","🔬 العلوم"],["historyQuestions","🏛️ التاريخ"],["technologyQuestions","💻 التكنولوجيا"],["moviesQuestions","🎬 الأفلام"],["gamesQuestions","🎮 الألعاب"]];let picked=C.slice(0,6).map(x=>x[0]),turn=0,scores=[0,0],timer=null,current=null,value=0;const $=id=>document.getElementById(id);function bank(k){try{let b=k==="footballQuestions"?(typeof questionsData!=="undefined"?questionsData:[]):k==="generalQuestions"?(typeof generalQuestions!=="undefined"?generalQuestions:[]):k==="seerahQuestions"?(typeof seerahQuestions!=="undefined"?seerahQuestions:[]):k==="geographyQuestions"?(typeof geographyQuestions!=="undefined"?geographyQuestions:[]):k==="scienceQuestions"?(typeof scienceQuestions!=="undefined"?scienceQuestions:[]):k==="historyQuestions"?(typeof historyQuestions!=="undefined"?historyQuestions:[]):k==="technologyQuestions"?(typeof technologyQuestions!=="undefined"?technologyQuestions:[]):k==="moviesQuestions"?(typeof moviesQuestions!=="undefined"?moviesQuestions:[]):k==="gamesQuestions"?(typeof gamesQuestions!=="undefined"?gamesQuestions:[]):[];if(!Array.isArray(b)&&b&&typeof b==="object")b=Object.values(b).flatMap(v=>Array.isArray(v)?v:[]);return Array.isArray(b)?b.filter(q=>q&&q.q&&Array.isArray(q.options)):[]}catch(e){return[]}}function sh(a){for(let i=a.length-1;i;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}function open(){ $("sjOverlay").style.display="block";$("sjSetup").style.display="block";$("sjGame").style.display="none";let box=$("sjCatPick");box.innerHTML="";C.forEach(([k,n])=>{let b=document.createElement("button");b.className="sj-pick"+(picked.includes(k)?" active":"");b.textContent=n;b.onclick=()=>{if(picked.includes(k)){if(picked.length>1)picked=picked.filter(x=>x!==k);b.classList.remove("active")}else if(picked.length<6){picked.push(k);b.classList.add("active")}};box.appendChild(b)})}function start(){if(picked.length!==6){alert("اختار 6 فئات بالضبط");return}let qs=picked.map(k=>sh(bank(k)).slice(0,6));if(qs.some(x=>!x.length)){alert("أحد الأقسام المختارة لا يحتوي أسئلة صالحة");return}scores=[0,0];turn=0;$("sjNameA").textContent=$("sjTeamA").value||"الفريق الأول";$("sjNameB").textContent=$("sjTeamB").value||"الفريق الثاني";$("sjScoreA").textContent=0;$("sjScoreB").textContent=0;$("sjSetup").style.display="none";$("sjGame").style.display="block";let board=$("sjBoard");board.innerHTML="";picked.forEach(k=>{let h=document.createElement("div");h.className="sj-cat";h.textContent=C.find(x=>x[0]===k)[1];board.appendChild(h)});for(let r=0;r<6;r++)for(let c=0;c<6;c++){let b=document.createElement("button");b.className="sj-cell";b.textContent=(r+1)*100;b.onclick=()=>ask(qs[c][r],(r+1)*100,b);board.appendChild(b)}update()}function update(){$("sjTurn").textContent="دور "+(turn?$("sjNameB").textContent:$("sjNameA").textContent)}function ask(q,v,btn){if(btn.classList.contains("used"))return;btn.classList.add("used");if(!q)return;current=q;value=v;$("sjQuestion").style.display="block";$("sjQText").textContent=q.q;$("sjNext").style.display="none";let box=$("sjOptions");box.innerHTML="";q.options.forEach((o,i)=>{let b=document.createElement("button");b.className="sj-opt";b.textContent=o;b.onclick=()=>answer(i,b);box.appendChild(b)});let s=60;$("sjTimer").textContent="⏱️ "+s;clearInterval(timer);timer=setInterval(()=>{s--;$("sjTimer").textContent="⏱️ "+s;if(s<=0)answer(-1,null)},1000)}function answer(i,clicked){clearInterval(timer);let cor=Number(current.correct);[...$("sjOptions").children].forEach((b,n)=>{b.disabled=true;if(n===cor)b.classList.add("correct")});if(clicked&&i!==cor)clicked.classList.add("wrong");if(i===cor)scores[turn]+=value;else if(i!==-1)scores[turn]=Math.max(0,scores[turn]-value);$("sjScoreA").textContent=scores[0];$("sjScoreB").textContent=scores[1];$("sjNext").style.display="inline-block"}$("sjNext").onclick=()=>{$("sjQuestion").style.display="none";turn=turn?0:1;update()};$("sjStart").onclick=start;$("sjClose").onclick=()=>{$("sjOverlay").style.display="none";clearInterval(timer)};window.openSenJeem=open})();</script><script id="senjeem-button-binding">document.addEventListener("DOMContentLoaded",function(){const b=document.getElementById("challengeModeBtn");if(b){b.textContent="⚡ سين جيم — ابدأ التحدي";b.onclick=function(e){e.preventDefault();if(window.openSenJeem)window.openSenJeem()}}});</script></body>
 </html>
